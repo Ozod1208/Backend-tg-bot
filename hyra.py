@@ -1,18 +1,15 @@
+import os
 import google.generativeai as genai
 from telegram import Update
 from telegram.ext import Application, MessageHandler, ContextTypes, filters
 
-# 🔑 Gemini API kaliti
-GEMINI_API_KEY = "AIzaSyC7DW5cIQP052cRLu0DZy8fT3JG3h6o2X8"
+# 🔑 Environment Variables’dan olish
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+ADMIN_ID = int(os.getenv("ADMIN_ID", "7776798862"))  # Default qiymat
+
+# Gemini konfiguratsiyasi
 genai.configure(api_key=GEMINI_API_KEY)
-
-# 🤖 Telegram bot token
-TELEGRAM_TOKEN = "8225342146:AAGxbQmJsVSm8T9yQM1_rLR_qz0kDYT7YPQ"
-
-# 👑 Admin ID
-ADMIN_ID = 7776798862   # Sizning ID’ingiz
-
-# Gemini modelini chaqirish
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 def escape_markdown(text: str) -> str:
@@ -28,7 +25,7 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = update.message.from_user.username or "Noma'lum foydalanuvchi"
 
     try:
-        # ✅ Foydalanuvchi yozgan xabarni admin’ga yuboramiz
+        # Foydalanuvchi xabarini admin’ga yuborish
         await context.bot.send_message(
             chat_id=ADMIN_ID,
             text=f"👤 Yangi xabar:\n"
@@ -37,14 +34,10 @@ async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  f"Xabar: {user_message}"
         )
 
-        # ✅ Gemini javobi
+        # Gemini javobi
         response = model.generate_content(user_message)
         text = response.text or ""
-
-        # Gemini yuborgan **qalin** belgilarini *qalin* ga almashtiramiz
-        text = text.replace("**", "*")
-
-        # MarkdownV2 ga moslash
+        text = text.replace("**", "*")  # Qalin belgilarni almashtirish
         text = escape_markdown(text)
 
         await update.message.reply_text(text, parse_mode="MarkdownV2")
@@ -61,3 +54,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+if __name__ == "__main__":
+    main()
+
